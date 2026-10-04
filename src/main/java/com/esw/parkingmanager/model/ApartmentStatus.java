@@ -1,0 +1,6 @@
+package com.esw.parkingmanager.model;
+
+public enum ApartmentStatus {
+    ACTIVE,
+    MOVED_OUT // Deactivate but dont delete so we have a history log
+}
