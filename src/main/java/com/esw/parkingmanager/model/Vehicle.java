@@ -22,8 +22,8 @@ public class Vehicle {
     private String model;
 
     @Column(nullable = false)
-    // We make it integer so that if its returned empty, it won't auto assign a 0.
-    // empty primitives like Integer return null. Empty int returns 0.
+    // Integer (wrapper object) instead of int (primitive):
+    // a missing JSON value stays null and the DB rejects it. An int would silently become 0.
     private Integer year;
 
     @Column(nullable = false)
