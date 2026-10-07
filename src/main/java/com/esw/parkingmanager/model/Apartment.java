@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import java.util.UUID;
 
 @Entity
+// Unique pair (No duplicate UnitNumbers inside a property)
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"property_id", "unitNumber"}))
 public class Apartment {
 
     @Id
@@ -15,6 +17,7 @@ public class Apartment {
     private  String unitNumber;
 
     @ManyToOne
+    @JoinColumn(name = "property_id", nullable = false)
     private Property property;
 
     @Column(nullable = false)
@@ -32,10 +35,6 @@ public class Apartment {
 
     public UUID getId() {
         return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
     }
 
     public String getUnitNumber() {
@@ -72,9 +71,5 @@ public class Apartment {
 
     public ApartmentStatus getStatus() {
         return status;
-    }
-
-    public void setStatus(ApartmentStatus status) {
-        this.status = status;
     }
 }

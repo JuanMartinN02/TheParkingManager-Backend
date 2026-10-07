@@ -4,7 +4,9 @@ import com.esw.parkingmanager.model.Apartment;
 import com.esw.parkingmanager.model.Property;
 import com.esw.parkingmanager.repository.ApartmentRepository;
 import com.esw.parkingmanager.repository.PropertyRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,7 +28,7 @@ public class ApartmentController {
     @PostMapping
     public Apartment create(@PathVariable UUID propertyId, @RequestBody Apartment apartment){
         Property property = propertyRepository.findById(propertyId)
-                .orElseThrow(() -> new RuntimeException("Property not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Property not found"));
 
         apartment.setProperty(property);
 
@@ -42,8 +44,8 @@ public class ApartmentController {
     // Get an apartment
     @GetMapping("/{apartmentId}")
     public Apartment getOne(@PathVariable UUID propertyId, @PathVariable UUID apartmentId) {
-        return apartmentRepository.findById(apartmentId)
-                .orElseThrow(() -> new RuntimeException("Apartment not found"));
+        return apartmentRepository.findByIdAndPropertyId(apartmentId, propertyId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Apartment not found"));
     }
 
     // Update apartment
@@ -52,11 +54,10 @@ public class ApartmentController {
                             @PathVariable UUID apartmentId,
                             @RequestBody Apartment changes) {
         Apartment apartment = apartmentRepository.findById(apartmentId)
-                .orElseThrow(() -> new RuntimeException("Apartment not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Apartment not found"));
         apartment.setUnitNumber(changes.getUnitNumber());
         apartment.setMaxVehicles(changes.getMaxVehicles());
         apartment.setMaxVisitorPasses(changes.getMaxVisitorPasses());
-        apartment.setStatus(changes.getStatus());
         return apartmentRepository.save(apartment);
     }
 }

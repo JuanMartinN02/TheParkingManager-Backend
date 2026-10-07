@@ -4,6 +4,7 @@ import com.esw.parkingmanager.model.Apartment;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ApartmentRepository extends JpaRepository<Apartment, UUID> {
@@ -11,4 +12,7 @@ public interface ApartmentRepository extends JpaRepository<Apartment, UUID> {
     // Only bring the Properties apartment (Multitenancy) property boundary filter
     // to make sure a request for one property only loads apartments belonging to that specific property.
     List<Apartment> findByPropertyId(UUID propertyId);
+
+    // WHERE id = ? AND property_id = ?
+    Optional<Apartment> findByIdAndPropertyId(UUID id, UUID propertyId);
 }

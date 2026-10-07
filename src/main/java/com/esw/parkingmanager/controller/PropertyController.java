@@ -2,7 +2,9 @@ package com.esw.parkingmanager.controller;
 
 import com.esw.parkingmanager.model.Property;
 import com.esw.parkingmanager.repository.PropertyRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,14 +35,14 @@ public class PropertyController {
     @GetMapping("/{id}")
     public Property getOne(@PathVariable UUID id){
         return propertyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Property not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Property not found"));
     }
 
     // Update property
     @PutMapping("/{id}")
     public Property update(@PathVariable UUID id, @RequestBody Property changes){
         Property property = propertyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Property not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Property not found"));
 
         property.setName(changes.getName());
         property.setVisitorSpotCapacity(changes.getVisitorSpotCapacity());
