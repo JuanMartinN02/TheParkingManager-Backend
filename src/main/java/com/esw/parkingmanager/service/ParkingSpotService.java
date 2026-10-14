@@ -1,11 +1,10 @@
 package com.esw.parkingmanager.service;
 
-import com.esw.parkingmanager.ParkingManagerApplication;
 import com.esw.parkingmanager.model.ParkingSpot;
 import com.esw.parkingmanager.model.Property;
 import com.esw.parkingmanager.repository.ParkingSpotRepository;
 import com.esw.parkingmanager.repository.PropertyRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
