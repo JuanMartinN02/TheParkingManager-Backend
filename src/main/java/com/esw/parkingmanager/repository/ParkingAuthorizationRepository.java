@@ -18,7 +18,7 @@ public interface ParkingAuthorizationRepository extends JpaRepository<ParkingAut
     // find specific auth
     Optional<ParkingAuthorization> findByIdAndApartmentId(UUID id, UUID apartmentId);
 
-    // Active authorizations for a given parking spot
+    // Active authorizations for a given parking spot (spot = X AND validUntil IS NULL)  OR  (validUntil >= today)
     @Query("""
             SELECT COUNT(a) FROM ParkingAuthorization a
             WHERE a.spot.id = :spotId
