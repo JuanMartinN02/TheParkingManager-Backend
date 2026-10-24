@@ -20,4 +20,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
 
     // Does this vehicle belong to this apartment?
     Optional<Vehicle> findByIdAndApartmentId(UUID id, UUID apartmentId);
+
+    // return the vehicle entity by property ID and Vehicle Plate
+    Optional<Vehicle> findByPropertyIdAndPlate(UUID propertyId, String plate);
 }
