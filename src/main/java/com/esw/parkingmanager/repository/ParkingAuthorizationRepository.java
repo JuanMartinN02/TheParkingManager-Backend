@@ -18,7 +18,8 @@ public interface ParkingAuthorizationRepository extends JpaRepository<ParkingAut
     // find specific auth
     Optional<ParkingAuthorization> findByIdAndApartmentId(UUID id, UUID apartmentId);
 
-    // Active authorizations for a given parking spot (spot = X AND validUntil IS NULL)  OR  (validUntil >= today)
+    // Count of Active authorizations for a given parking spot
+    // (spot = X AND validUntil IS NULL)  OR  (validUntil >= today)
     @Query("""
             SELECT COUNT(a) FROM ParkingAuthorization a
             WHERE a.spot.id = :spotId
@@ -27,7 +28,7 @@ public interface ParkingAuthorizationRepository extends JpaRepository<ParkingAut
     long countActiveForSpot(@Param("spotId") UUID spotId,
                             @Param("today") LocalDate today);
 
-    // Active authorizations for a given apartment
+    // Count of active authorizations for a given apartment
     @Query("""
             SELECT COUNT(a) FROM ParkingAuthorization a
             WHERE a.apartment.id = :apartmentId
@@ -36,6 +37,27 @@ public interface ParkingAuthorizationRepository extends JpaRepository<ParkingAut
             """)
     long countActivePermitsForApartment(@Param("apartmentId") UUID apartmentId,
                                         @Param("today") LocalDate today);
+
+    // Active parking authorizations by apartment
+    @Query("""
+        SELECT a FROM ParkingAuthorization a
+        WHERE a.apartment.id = :apartmentId
+          AND (a.validUntil IS NULL OR a.validUntil >= :today)
+        """)
+    List<ParkingAuthorization> findActiveForApartment(@Param("apartmentId") UUID apartmentId,
+                                                      @Param("today") LocalDate today);
+
+    // Active Authorizations by spot
+    // We accepted a tiny race window on double-booking. If two active rows ever existed,
+    // an Optional return type would make Spring throw an exception, and the operator
+    // would get a 500 in the middle of a lookup. A List never throws. The service will take the first entry.
+    @Query("""
+        SELECT a FROM ParkingAuthorization a
+        WHERE a.spot.id = :spotId
+          AND (a.validUntil IS NULL OR a.validUntil >= :today)
+        """)
+    List<ParkingAuthorization> findActiveForSpot(@Param("spotId") UUID spotId,
+                                                 @Param("today") LocalDate today);
 
     // delete
     void deleteBySpotId(UUID spotId);

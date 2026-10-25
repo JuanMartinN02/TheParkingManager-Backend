@@ -2,6 +2,7 @@ package com.esw.parkingmanager.service;
 
 import com.esw.parkingmanager.model.ParkingSpot;
 import com.esw.parkingmanager.model.Property;
+import com.esw.parkingmanager.repository.ParkingAuthorizationRepository;
 import com.esw.parkingmanager.repository.ParkingSpotRepository;
 import com.esw.parkingmanager.repository.PropertyRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -18,10 +21,17 @@ public class ParkingSpotService {
 
     private final ParkingSpotRepository parkingSpotRepository;
     private final PropertyRepository propertyRepository;
+    private final ParkingAuthorizationRepository authorizationRepository;
+    private final Clock clock;
 
-    public ParkingSpotService(ParkingSpotRepository parkingSpotRepository, PropertyRepository propertyRepository) {
+    public ParkingSpotService(ParkingSpotRepository parkingSpotRepository,
+                              PropertyRepository propertyRepository,
+                              ParkingAuthorizationRepository authorizationRepository,
+                              Clock clock) {
         this.parkingSpotRepository = parkingSpotRepository;
         this.propertyRepository = propertyRepository;
+        this.authorizationRepository = authorizationRepository;
+        this.clock = clock;
     }
 
     @Transactional
@@ -99,10 +109,18 @@ public class ParkingSpotService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Spot not found"));
     }
 
-    // Step 4 will add a rule here: can't delete a spot with an active authorization
+    // Rule 6: can't delete a spot that's actively assigned, its expired authorizations go with it
     @Transactional
     public void delete(UUID propertyId, UUID spotId) {
         ParkingSpot spot = getOne(propertyId, spotId);
+        LocalDate today = LocalDate.now(clock);
+
+        if (authorizationRepository.countActiveForSpot(spot.getId(), today) > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Spot " + spot.getLabel() + " is assigned to an apartment. Remove that authorization first");
+        }
+
+        authorizationRepository.deleteBySpotId(spot.getId());
         parkingSpotRepository.delete(spot);
     }
 

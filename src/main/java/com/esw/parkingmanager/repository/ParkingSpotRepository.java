@@ -15,6 +15,8 @@ public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, UUID> 
 
     Optional<ParkingSpot> findByIdAndPropertyId(UUID id, UUID propertyId);
 
+    Optional<ParkingSpot> findByPropertyIdAndLabel(UUID propertyId, String label);
+
     boolean existsByPropertyIdAndLabel(UUID propertyId, String label);
 
     /* the bulk request has 200 labels (example), and we need to know which already exist. Calling existsBy...
