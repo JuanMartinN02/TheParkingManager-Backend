@@ -49,13 +49,18 @@ public class AppUser {
     public AppUser() {
     }
 
+    // Same rule on save and on login, so Juan@ and juan@ are always the same account
+    public static String normalizeEmail(String email) {
+        return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
+    }
+
     public UUID getId() { return id; }
 
     public String getEmail() { return email; }
 
     // Emails are stored lowercase so Juan@ and juan@ can't be two different accounts
     public void setEmail(String email) {
-        this.email = email == null ? null : email.trim().toLowerCase(Locale.ROOT);
+        this.email = normalizeEmail(email);
     }
 
     public String getPasswordHash() { return passwordHash; }
