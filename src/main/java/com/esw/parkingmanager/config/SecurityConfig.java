@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
 
-        // CSRF isn't configured here on purpose: it's ON by default, which is exactly what sessions need
+        // CSRF isn't configured here on purpose. it's ON by default.
         return http.build();
     }
 }
