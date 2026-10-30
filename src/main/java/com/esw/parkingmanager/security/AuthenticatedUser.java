@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.UUID;
 
 // What Spring keeps in the session for a LoggedIn user.
+// Spring doesn't know AppUser so this class translate the user to Spring's language after login
+// It lives in the session for the whole login and an entity there would be a stale copy of the database.
 public class AuthenticatedUser implements UserDetails {
 
     private final UUID id;
