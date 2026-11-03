@@ -39,6 +39,7 @@ public class AccessGuard {
 
     // Reloaded from the database on every check so a deactivated user or a changed role takes effect right away
     public AppUser currentUser() {
+        // Who is making this request?
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof AuthenticatedUser principal)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
