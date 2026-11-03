@@ -1,4 +1,6 @@
 package com.esw.parkingmanager.dto;
 
-public record ResetPasswordRequest(String temporaryPassword) {
+import jakarta.validation.constraints.NotBlank;
+
+public record ResetPasswordRequest(@NotBlank String temporaryPassword) {
 }
