@@ -5,6 +5,7 @@ import com.esw.parkingmanager.security.AccessGuard;
 import com.esw.parkingmanager.service.ApartmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import static com.esw.parkingmanager.security.RoleGroups.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,20 +25,20 @@ public class ApartmentController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Apartment create(@PathVariable UUID propertyId, @RequestBody Apartment apartment) {
-        access.checkProperty(propertyId);
+        access.checkProperty(propertyId, ADMINS);
         return apartmentService.create(propertyId, apartment);
     }
 
     @GetMapping
     public List<Apartment> list(@PathVariable UUID propertyId) {
-        access.checkProperty(propertyId);
+        access.checkProperty(propertyId, STAFF);
         return apartmentService.list(propertyId);
     }
 
     // Apartment level here, so a resident can open their own apartment but not a neighbor's
     @GetMapping("/{apartmentId}")
     public Apartment getOne(@PathVariable UUID propertyId, @PathVariable UUID apartmentId) {
-        access.checkApartment(propertyId, apartmentId);
+        access.checkApartment(propertyId, apartmentId, EVERYONE);
         return apartmentService.getOne(propertyId, apartmentId);
     }
 
@@ -45,7 +46,7 @@ public class ApartmentController {
     public Apartment update(@PathVariable UUID propertyId,
                             @PathVariable UUID apartmentId,
                             @RequestBody Apartment changes) {
-        access.checkApartment(propertyId, apartmentId);
+        access.checkApartment(propertyId, apartmentId, ADMINS);
         return apartmentService.update(propertyId, apartmentId, changes);
     }
 }

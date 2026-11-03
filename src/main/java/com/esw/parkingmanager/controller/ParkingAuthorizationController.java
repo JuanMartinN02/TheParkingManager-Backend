@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import static com.esw.parkingmanager.security.RoleGroups.*;
+
 @RestController
 @RequestMapping("/properties/{propertyId}/apartments/{apartmentId}/authorizations")
 public class ParkingAuthorizationController {
@@ -28,13 +30,13 @@ public class ParkingAuthorizationController {
     public ParkingAuthorization create(@PathVariable UUID propertyId,
                                        @PathVariable UUID apartmentId,
                                        @RequestBody CreateAuthorizationRequest request) {
-        access.checkApartment(propertyId, apartmentId);
+        access.checkApartment(propertyId, apartmentId, ADMINS);
         return authorizationService.create(propertyId, apartmentId, request);
     }
 
     @GetMapping
     public List<ParkingAuthorization> list(@PathVariable UUID propertyId, @PathVariable UUID apartmentId) {
-        access.checkApartment(propertyId, apartmentId);
+        access.checkApartment(propertyId, apartmentId, EVERYONE);
         return authorizationService.list(propertyId, apartmentId);
     }
 
@@ -42,7 +44,7 @@ public class ParkingAuthorizationController {
     public ParkingAuthorization getOne(@PathVariable UUID propertyId,
                                        @PathVariable UUID apartmentId,
                                        @PathVariable UUID authorizationId) {
-        access.checkApartment(propertyId, apartmentId);
+        access.checkApartment(propertyId, apartmentId, EVERYONE);
         return authorizationService.getOne(propertyId, apartmentId, authorizationId);
     }
 
@@ -51,7 +53,7 @@ public class ParkingAuthorizationController {
                                       @PathVariable UUID apartmentId,
                                       @PathVariable UUID authorizationId,
                                       @RequestBody RenewAuthorizationRequest request) {
-        access.checkApartment(propertyId, apartmentId);
+        access.checkApartment(propertyId, apartmentId, ADMINS);
         return authorizationService.renew(propertyId, apartmentId, authorizationId, request.validUntil());
     }
 
@@ -60,7 +62,7 @@ public class ParkingAuthorizationController {
     public void delete(@PathVariable UUID propertyId,
                        @PathVariable UUID apartmentId,
                        @PathVariable UUID authorizationId) {
-        access.checkApartment(propertyId, apartmentId);
+        access.checkApartment(propertyId, apartmentId, ADMINS);
         authorizationService.delete(propertyId, apartmentId, authorizationId);
     }
 }

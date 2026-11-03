@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+import static com.esw.parkingmanager.security.RoleGroups.*;
+
 @RestController
 @RequestMapping("/properties/{propertyId}/lookup")
 public class LookupController {
@@ -24,14 +26,14 @@ public class LookupController {
     // Plate goes in the query string so spaces and dashes don't break the URL path
     @GetMapping("/plate")
     public PlateLookupResponse lookupPlate(@PathVariable UUID propertyId, @RequestParam String plate) {
-        access.checkProperty(propertyId);
+        access.checkProperty(propertyId, STAFF);
         return plateLookupService.lookupPlate(propertyId, plate);
     }
 
     // Lookup by spot (towers)
     @GetMapping("/spot")
     public SpotLookupResponse lookupSpot(@PathVariable UUID propertyId, @RequestParam String label) {
-        access.checkProperty(propertyId);
+        access.checkProperty(propertyId, STAFF);
         return plateLookupService.lookupSpot(propertyId, label);
     }
 }
