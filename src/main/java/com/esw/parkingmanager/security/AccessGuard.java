@@ -37,9 +37,17 @@ public class AccessGuard {
         }
     }
 
-    // Reloaded from the database on every check so a deactivated user or a changed role takes effect right away
+    // Every endpoint goes through this. A user on a temporary password can't do anything until they change it
     public AppUser currentUser() {
-        // Who is making this request?
+        AppUser user = currentUserIgnoringPasswordChange();
+        if (user.isMustChangePassword()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Password change required");
+        }
+        return user;
+    }
+
+    // Only for /auth/me and /auth/change-password, the two things a user needs while their password is temporary
+    public AppUser currentUserIgnoringPasswordChange() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof AuthenticatedUser principal)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
