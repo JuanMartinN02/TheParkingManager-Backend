@@ -4,6 +4,7 @@ import com.esw.parkingmanager.model.Role;
 
 import java.util.Set;
 
+// lets me write SUPER_ADMIN instead of Role.SUPER_ADMIN. More readable.
 import static com.esw.parkingmanager.model.Role.*;
 
 // Named role groups so every endpoint says who can use it in plain words
