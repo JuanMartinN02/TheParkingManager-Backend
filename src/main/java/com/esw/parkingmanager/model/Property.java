@@ -1,6 +1,11 @@
 package com.esw.parkingmanager.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+
 import java.util.UUID;
 
 @Entity
@@ -9,17 +14,25 @@ public class Property {
     @GeneratedValue
     private UUID id;
 
+    @NotBlank
     @Column(nullable = false)
     private String name;
 
+    // Integer, not int: a missing value must be rejected, not turned into 0
+    @NotNull
+    @PositiveOrZero
     @Column(nullable = false)
-    private int visitorSpotCapacity;
+    private Integer visitorSpotCapacity;
 
+    @NotNull
+    @PositiveOrZero
     @Column(nullable = false)
-    private int permitSpotCapacity;
+    private Integer permitSpotCapacity;
 
+    @NotNull
+    @Positive
     @Column(nullable = false)
-    private int visitorPassDurationHours;
+    private Integer visitorPassDurationHours;
 
     private String mapPdfUrl;
 
@@ -32,23 +45,23 @@ public class Property {
 
     public void setName(String name) { this.name = name; }
 
-    public int getVisitorSpotCapacity() { return visitorSpotCapacity; }
+    public Integer getVisitorSpotCapacity() { return visitorSpotCapacity; }
 
-    public void setVisitorSpotCapacity(int visitorSpotCapacity) { this.visitorSpotCapacity = visitorSpotCapacity; }
+    public void setVisitorSpotCapacity(Integer visitorSpotCapacity) { this.visitorSpotCapacity = visitorSpotCapacity; }
 
-    public int getPermitSpotCapacity() {
+    public Integer getPermitSpotCapacity() {
         return permitSpotCapacity;
     }
 
-    public void setPermitSpotCapacity(int permitSpotCapacity) {
+    public void setPermitSpotCapacity(Integer permitSpotCapacity) {
         this.permitSpotCapacity = permitSpotCapacity;
     }
 
-    public int getVisitorPassDurationHours() {
+    public Integer getVisitorPassDurationHours() {
         return visitorPassDurationHours;
     }
 
-    public void setVisitorPassDurationHours(int visitorPassDurationHours) {
+    public void setVisitorPassDurationHours(Integer visitorPassDurationHours) {
         this.visitorPassDurationHours = visitorPassDurationHours;
     }
 

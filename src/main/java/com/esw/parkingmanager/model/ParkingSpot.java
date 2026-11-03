@@ -1,6 +1,7 @@
 package com.esw.parkingmanager.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.UUID;
 
@@ -12,6 +13,7 @@ public class ParkingSpot {
     @GeneratedValue
     private UUID id;
 
+    @NotBlank
     @Column(nullable = false)
     private String label;
 
