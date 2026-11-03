@@ -4,6 +4,7 @@ import static com.esw.parkingmanager.security.RoleGroups.*;
 import com.esw.parkingmanager.model.Property;
 import com.esw.parkingmanager.repository.PropertyRepository;
 import com.esw.parkingmanager.security.AccessGuard;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,7 +26,7 @@ public class PropertyController {
 
     // SUPER_ADMIN only, the role rule comes in 6d
     @PostMapping
-    public Property create(@RequestBody Property property) {
+    public Property create(@Valid @RequestBody Property property) {
         access.checkRole(SUPER_ADMIN_ONLY);
         return propertyRepository.save(property);
     }
@@ -45,7 +46,7 @@ public class PropertyController {
     }
 
     @PutMapping("/{id}")
-    public Property update(@PathVariable UUID id, @RequestBody Property changes) {
+    public Property update(@PathVariable UUID id, @Valid @RequestBody Property changes) {
         access.checkProperty(id, ADMINS);
         Property property = propertyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Property not found"));

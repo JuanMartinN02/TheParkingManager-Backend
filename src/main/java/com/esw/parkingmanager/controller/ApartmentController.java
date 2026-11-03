@@ -3,6 +3,7 @@ package com.esw.parkingmanager.controller;
 import com.esw.parkingmanager.model.Apartment;
 import com.esw.parkingmanager.security.AccessGuard;
 import com.esw.parkingmanager.service.ApartmentService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import static com.esw.parkingmanager.security.RoleGroups.*;
@@ -24,7 +25,7 @@ public class ApartmentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Apartment create(@PathVariable UUID propertyId, @RequestBody Apartment apartment) {
+    public Apartment create(@PathVariable UUID propertyId, @Valid @RequestBody Apartment apartment) {
         access.checkProperty(propertyId, ADMINS);
         return apartmentService.create(propertyId, apartment);
     }
@@ -45,7 +46,7 @@ public class ApartmentController {
     @PutMapping("/{apartmentId}")
     public Apartment update(@PathVariable UUID propertyId,
                             @PathVariable UUID apartmentId,
-                            @RequestBody Apartment changes) {
+                            @Valid @RequestBody Apartment changes) {
         access.checkApartment(propertyId, apartmentId, ADMINS);
         return apartmentService.update(propertyId, apartmentId, changes);
     }

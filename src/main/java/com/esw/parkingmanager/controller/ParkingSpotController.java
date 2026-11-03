@@ -4,6 +4,7 @@ import com.esw.parkingmanager.dto.BulkSpotRequest;
 import com.esw.parkingmanager.model.ParkingSpot;
 import com.esw.parkingmanager.security.AccessGuard;
 import com.esw.parkingmanager.service.ParkingSpotService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +27,7 @@ public class ParkingSpotController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ParkingSpot create(@PathVariable UUID propertyId, @RequestBody ParkingSpot spot) {
+    public ParkingSpot create(@PathVariable UUID propertyId, @Valid @RequestBody ParkingSpot spot) {
         access.checkProperty(propertyId, ADMINS);
         return parkingSpotService.create(propertyId, spot);
     }

@@ -5,6 +5,7 @@ import com.esw.parkingmanager.dto.ResetPasswordRequest;
 import com.esw.parkingmanager.dto.UserResponse;
 import com.esw.parkingmanager.security.AccessGuard;
 import com.esw.parkingmanager.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +26,7 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse create(@RequestBody CreateUserRequest request) {
+    public UserResponse create(@Valid @RequestBody CreateUserRequest request) {
         return UserResponse.from(userService.create(access.currentUser(), request));
     }
 
@@ -42,7 +43,7 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/reset-password")
-    public UserResponse resetPassword(@PathVariable UUID userId, @RequestBody ResetPasswordRequest request) {
+    public UserResponse resetPassword(@PathVariable UUID userId, @Valid @RequestBody ResetPasswordRequest request) {
         return UserResponse.from(userService.resetPassword(access.currentUser(), userId, request.temporaryPassword()));
     }
 }

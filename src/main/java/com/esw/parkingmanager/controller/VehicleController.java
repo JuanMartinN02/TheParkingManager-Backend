@@ -3,6 +3,7 @@ package com.esw.parkingmanager.controller;
 import com.esw.parkingmanager.model.Vehicle;
 import com.esw.parkingmanager.security.AccessGuard;
 import com.esw.parkingmanager.service.VehicleService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +26,7 @@ public class VehicleController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Vehicle create(@PathVariable UUID propertyId, @PathVariable UUID apartmentId, @RequestBody Vehicle vehicle) {
+    public Vehicle create(@PathVariable UUID propertyId, @PathVariable UUID apartmentId, @Valid @RequestBody Vehicle vehicle) {
         access.checkApartment(propertyId, apartmentId, VEHICLE_EDITORS);
         return vehicleService.create(propertyId, apartmentId, vehicle);
     }
