@@ -2,6 +2,7 @@ package com.esw.parkingmanager.controller;
 
 import com.esw.parkingmanager.model.Property;
 import com.esw.parkingmanager.repository.PropertyRepository;
+import com.esw.parkingmanager.security.AccessGuard;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,33 +15,35 @@ import java.util.UUID;
 public class PropertyController {
 
     private final PropertyRepository propertyRepository;
+    private final AccessGuard access;
 
-    public PropertyController(PropertyRepository propertyRepository) {
+    public PropertyController(PropertyRepository propertyRepository, AccessGuard access) {
         this.propertyRepository = propertyRepository;
+        this.access = access;
     }
 
-    // Create a property
+    // SUPER_ADMIN only, the role rule comes in 6d
     @PostMapping
-    public Property create(@RequestBody Property property){
+    public Property create(@RequestBody Property property) {
         return propertyRepository.save(property);
     }
 
-    // Get a List of all properties
+    // For now any logged in user sees every property. 6d limits this by role
     @GetMapping
-    public List<Property> list(){
+    public List<Property> list() {
         return propertyRepository.findAll();
     }
 
-    // Get property by ID or throw exception
     @GetMapping("/{id}")
-    public Property getOne(@PathVariable UUID id){
+    public Property getOne(@PathVariable UUID id) {
+        access.checkProperty(id);
         return propertyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Property not found"));
     }
 
-    // Update property
     @PutMapping("/{id}")
-    public Property update(@PathVariable UUID id, @RequestBody Property changes){
+    public Property update(@PathVariable UUID id, @RequestBody Property changes) {
+        access.checkProperty(id);
         Property property = propertyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Property not found"));
 
@@ -51,5 +54,4 @@ public class PropertyController {
         property.setMapPdfUrl(changes.getMapPdfUrl());
         return propertyRepository.save(property);
     }
-
 }

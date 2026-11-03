@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -20,25 +21,43 @@ public class AccessGuard {
         this.userRepository = userRepository;
     }
 
-    public void checkProperty(UUID propertyId) {
-        if (!canAccessProperty(currentUser(), propertyId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have access to this property");
+    // For endpoints with no property in the URL, like creating or listing properties
+    public AppUser checkRole(Set<Role> allowed) {
+        AppUser user = currentUser();
+        if (!allowed.contains(user.getRole())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Your role can't do this");
         }
+        return user;
     }
 
-    public void checkApartment(UUID propertyId, UUID apartmentId) {
-        AppUser user = currentUser();
+    public AppUser checkProperty(UUID propertyId, Set<Role> allowed) {
+        AppUser user = checkRole(allowed);
         if (!canAccessProperty(user, propertyId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have access to this property");
         }
-        // A resident only sees their own apartment and everyone else goes by property
+        return user;
+    }
+
+    public AppUser checkApartment(UUID propertyId, UUID apartmentId, Set<Role> allowed) {
+        AppUser user = checkProperty(propertyId, allowed);
+        // A resident only sees their own apartment, everyone else goes by property
         if (user.getRole() == Role.RESIDENT && !apartmentId.equals(apartmentIdOf(user))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have access to this apartment");
         }
+        return user;
     }
 
-    // Reloaded from the database on every check so a deactivated user or a changed role takes effect right away
+    // Every endpoint goes through this. A user on a temporary password can't do anything until they change it
     public AppUser currentUser() {
+        AppUser user = currentUserIgnoringPasswordChange();
+        if (user.isMustChangePassword()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Password change required");
+        }
+        return user;
+    }
+
+    // Only for /auth/me and /auth/change-password, the two things a user needs while their password is temporary
+    public AppUser currentUserIgnoringPasswordChange() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof AuthenticatedUser principal)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not logged in");
