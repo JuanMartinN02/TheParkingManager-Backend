@@ -1,6 +1,10 @@
 package com.esw.parkingmanager.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
@@ -12,20 +16,26 @@ public class Vehicle {
     @GeneratedValue
     private UUID id;
 
+    @NotBlank
     @Column(nullable = false)
     private String plate;
 
+    @NotBlank
     @Column(nullable = false)
     private String make;
 
+    @NotBlank
     @Column(nullable = false)
     private String model;
 
+    // Catches typos like 20219 or 219
+    @NotNull
+    @Min(1900)
+    @Max(2100)
     @Column(nullable = false)
-    // Integer (wrapper object) instead of int (primitive):
-    // a missing JSON value stays null and the DB rejects it. An int would silently become 0.
     private Integer year;
 
+    @NotBlank
     @Column(nullable = false)
     private String color;
 
@@ -65,10 +75,10 @@ public class Vehicle {
         this.model = model;
     }
 
-    public int getYear() {
+    public Integer getYear() {
         return year;
     }
-    public void setYear(int year) {
+    public void setYear(Integer year) {
         this.year = year;
     }
 

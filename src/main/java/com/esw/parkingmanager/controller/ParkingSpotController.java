@@ -4,11 +4,14 @@ import com.esw.parkingmanager.dto.BulkSpotRequest;
 import com.esw.parkingmanager.model.ParkingSpot;
 import com.esw.parkingmanager.security.AccessGuard;
 import com.esw.parkingmanager.service.ParkingSpotService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+
+import static com.esw.parkingmanager.security.RoleGroups.*;
 
 @RestController
 @RequestMapping("/properties/{propertyId}/spots")
@@ -24,34 +27,34 @@ public class ParkingSpotController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ParkingSpot create(@PathVariable UUID propertyId, @RequestBody ParkingSpot spot) {
-        access.checkProperty(propertyId);
+    public ParkingSpot create(@PathVariable UUID propertyId, @Valid @RequestBody ParkingSpot spot) {
+        access.checkProperty(propertyId, ADMINS);
         return parkingSpotService.create(propertyId, spot);
     }
 
     @PostMapping("/bulk")
     @ResponseStatus(HttpStatus.CREATED)
     public List<ParkingSpot> createBulk(@PathVariable UUID propertyId, @RequestBody BulkSpotRequest request) {
-        access.checkProperty(propertyId);
+        access.checkProperty(propertyId, ADMINS);
         return parkingSpotService.createBulk(propertyId, request.labels());
     }
 
     @GetMapping
     public List<ParkingSpot> list(@PathVariable UUID propertyId) {
-        access.checkProperty(propertyId);
+        access.checkProperty(propertyId, STAFF);
         return parkingSpotService.list(propertyId);
     }
 
     @GetMapping("/{spotId}")
     public ParkingSpot getOne(@PathVariable UUID propertyId, @PathVariable UUID spotId) {
-        access.checkProperty(propertyId);
+        access.checkProperty(propertyId, STAFF);
         return parkingSpotService.getOne(propertyId, spotId);
     }
 
     @DeleteMapping("/{spotId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable UUID propertyId, @PathVariable UUID spotId) {
-        access.checkProperty(propertyId);
+        access.checkProperty(propertyId, ADMINS);
         parkingSpotService.delete(propertyId, spotId);
     }
 }

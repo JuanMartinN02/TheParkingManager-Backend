@@ -5,6 +5,7 @@ import com.esw.parkingmanager.dto.CsrfResponse;
 import com.esw.parkingmanager.dto.UserResponse;
 import com.esw.parkingmanager.security.AccessGuard;
 import com.esw.parkingmanager.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,7 @@ public class AuthController {
     // Has to work while the password is temporary, that's the whole point
     @PostMapping("/change-password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void changePassword(@RequestBody ChangePasswordRequest request) {
+    public void changePassword(@Valid @RequestBody ChangePasswordRequest request) {
         userService.changePassword(access.currentUserIgnoringPasswordChange(), request);
     }
 }

@@ -1,6 +1,9 @@
 package com.esw.parkingmanager.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.util.UUID;
 
@@ -13,18 +16,24 @@ public class Apartment {
     @GeneratedValue
     private UUID id;
 
+    @NotBlank
     @Column(nullable = false)
-    private  String unitNumber;
+    private String unitNumber;
 
     @ManyToOne
     @JoinColumn(name = "property_id", nullable = false)
     private Property property;
 
+    // Integer, not int: a missing limit must be rejected, not turned into 0
+    @NotNull
+    @PositiveOrZero
     @Column(nullable = false)
-    private int maxVehicles;
+    private Integer maxVehicles;
 
+    @NotNull
+    @PositiveOrZero
     @Column(nullable = false)
-    private int maxVisitorPasses;
+    private Integer maxVisitorPasses;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -53,19 +62,19 @@ public class Apartment {
         this.property = property;
     }
 
-    public int getMaxVehicles() {
+    public Integer getMaxVehicles() {
         return maxVehicles;
     }
 
-    public void setMaxVehicles(int maxVehicles) {
+    public void setMaxVehicles(Integer maxVehicles) {
         this.maxVehicles = maxVehicles;
     }
 
-    public int getMaxVisitorPasses() {
+    public Integer getMaxVisitorPasses() {
         return maxVisitorPasses;
     }
 
-    public void setMaxVisitorPasses(int maxVisitorPasses) {
+    public void setMaxVisitorPasses(Integer maxVisitorPasses) {
         this.maxVisitorPasses = maxVisitorPasses;
     }
 
