@@ -23,4 +23,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
 
     // return the vehicle entity by property ID and Vehicle Plate
     Optional<Vehicle> findByPropertyIdAndPlate(UUID propertyId, String plate);
+
+    // For move-out / move-in
+    long deleteByApartmentId(UUID apartmentId);
 }

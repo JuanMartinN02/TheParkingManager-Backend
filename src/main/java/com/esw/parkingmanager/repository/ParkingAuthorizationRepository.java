@@ -59,6 +59,9 @@ public interface ParkingAuthorizationRepository extends JpaRepository<ParkingAut
     List<ParkingAuthorization> findActiveForSpot(@Param("spotId") UUID spotId,
                                                  @Param("today") LocalDate today);
 
+    // For move-out / move-in
+    long deleteByApartmentId(UUID apartmentId);
+
     // delete
     void deleteBySpotId(UUID spotId);
 }
