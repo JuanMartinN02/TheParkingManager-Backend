@@ -1,10 +1,11 @@
 package com.esw.parkingmanager.service;
 
+import com.esw.parkingmanager.dto.MoveOutResponse;
 import com.esw.parkingmanager.model.Apartment;
+import com.esw.parkingmanager.model.ApartmentStatus;
+import com.esw.parkingmanager.model.AppUser;
 import com.esw.parkingmanager.model.Property;
-import com.esw.parkingmanager.repository.ApartmentRepository;
-import com.esw.parkingmanager.repository.PropertyRepository;
-import com.esw.parkingmanager.repository.VehicleRepository;
+import com.esw.parkingmanager.repository.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +20,19 @@ public class ApartmentService {
     private final ApartmentRepository apartmentRepository;
     private final PropertyRepository propertyRepository;
     private final VehicleRepository vehicleRepository;
+    private final ParkingAuthorizationRepository authorizationRepository;
+    private final AppUserRepository userRepository;
 
     public ApartmentService(ApartmentRepository apartmentRepository,
                             PropertyRepository propertyRepository,
-                            VehicleRepository vehicleRepository) {
+                            VehicleRepository vehicleRepository,
+                            ParkingAuthorizationRepository authorizationRepository,
+                            AppUserRepository userRepository) {
         this.apartmentRepository = apartmentRepository;
         this.propertyRepository = propertyRepository;
         this.vehicleRepository = vehicleRepository;
+        this.authorizationRepository = authorizationRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional
@@ -60,6 +67,38 @@ public class ApartmentService {
         apartment.setUnitNumber(changes.getUnitNumber());
         apartment.setMaxVehicles(changes.getMaxVehicles());
         apartment.setMaxVisitorPasses(changes.getMaxVisitorPasses());
+        return apartmentRepository.save(apartment);
+    }
+
+    @Transactional // All or nothing, a half done move-out could leave a former resident's car authorized
+    public MoveOutResponse moveOut(UUID propertyId, UUID apartmentId) {
+        Apartment apartment = getOne(propertyId, apartmentId);
+        if (apartment.getStatus() != ApartmentStatus.ACTIVE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Apartment is already moved out");
+        }
+
+        // Frees the apartment's reserved spots for the next tenant
+        long authorizationsRemoved = authorizationRepository.deleteByApartmentId(apartmentId);
+        long vehiclesRemoved = vehicleRepository.deleteByApartmentId(apartmentId);
+
+        // Deactivated, not deleted, so their account still exists for history
+        List<AppUser> residents = userRepository.findByApartmentIdAndActiveTrue(apartmentId);
+        residents.forEach(resident -> resident.setActive(false));
+        userRepository.saveAll(residents);
+
+        apartment.setStatus(ApartmentStatus.MOVED_OUT);
+        apartmentRepository.save(apartment);
+
+        return new MoveOutResponse(apartment.getUnitNumber(), authorizationsRemoved, vehiclesRemoved, residents.size());
+    }
+
+    @Transactional
+    public Apartment moveIn(UUID propertyId, UUID apartmentId) {
+        Apartment apartment = getOne(propertyId, apartmentId);
+        if (apartment.getStatus() != ApartmentStatus.MOVED_OUT) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Apartment is already active");
+        }
+        apartment.setStatus(ApartmentStatus.ACTIVE);
         return apartmentRepository.save(apartment);
     }
 }

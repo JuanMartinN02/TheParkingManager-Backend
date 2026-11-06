@@ -3,6 +3,7 @@ package com.esw.parkingmanager.service;
 import com.esw.parkingmanager.dto.ChangePasswordRequest;
 import com.esw.parkingmanager.dto.CreateUserRequest;
 import com.esw.parkingmanager.model.Apartment;
+import com.esw.parkingmanager.model.ApartmentStatus;
 import com.esw.parkingmanager.model.AppUser;
 import com.esw.parkingmanager.model.Role;
 import com.esw.parkingmanager.repository.AppUserRepository;
@@ -81,6 +82,12 @@ public class UserService {
                 }
                 // getOne also proves the apartment belongs to that property
                 Apartment apartment = apartmentService.getOne(request.propertyId(), request.apartmentId());
+
+                // A moved out apartment gets new residents only after move-in
+                if (apartment.getStatus() != ApartmentStatus.ACTIVE) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Apartment is not active");
+                }
+
                 user.setApartment(apartment);
                 // Copied from the apartment, never from the request, same as Vehicle
                 user.setProperty(apartment.getProperty());

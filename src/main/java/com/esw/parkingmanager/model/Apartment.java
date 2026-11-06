@@ -81,4 +81,8 @@ public class Apartment {
     public ApartmentStatus getStatus() {
         return status;
     }
+
+    public void setStatus(ApartmentStatus status) {
+        this.status = status;
+    }
 }

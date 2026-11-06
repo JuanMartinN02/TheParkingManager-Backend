@@ -2,10 +2,7 @@ package com.esw.parkingmanager.service;
 
 import com.esw.parkingmanager.dto.ChangePasswordRequest;
 import com.esw.parkingmanager.dto.CreateUserRequest;
-import com.esw.parkingmanager.model.Apartment;
-import com.esw.parkingmanager.model.AppUser;
-import com.esw.parkingmanager.model.Property;
-import com.esw.parkingmanager.model.Role;
+import com.esw.parkingmanager.model.*;
 import com.esw.parkingmanager.repository.AppUserRepository;
 import com.esw.parkingmanager.repository.PropertyRepository;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
@@ -173,6 +170,20 @@ class UserServiceTest {
         assertThat(passwordEncoder.matches("brand-new-long-password", resident.getPasswordHash())).isTrue();
     }
 
+    @Test
+    void residentCantBeCreatedForMovedOutApartment() {
+        AppUser superAdmin = user(SUPER_ADMIN, null);
+        Apartment movedOut = apartment(APARTMENT_301, PROPERTY_A);
+        movedOut.setStatus(ApartmentStatus.MOVED_OUT);
+        when(userRepository.existsByEmail(any())).thenReturn(false);
+        when(apartmentService.getOne(PROPERTY_A, APARTMENT_301)).thenReturn(movedOut);
+
+        assertStatus(() -> service.create(superAdmin,
+                        new CreateUserRequest("new@test.com", GOOD_PASSWORD, RESIDENT, PROPERTY_A, APARTMENT_301)),
+                HttpStatus.CONFLICT);
+        verify(userRepository, never()).save(any());
+    }
+
     // ---------- Helpers ----------
 
     // The fake save hands back the same object it receives, like the real one does
@@ -209,4 +220,5 @@ class UserServiceTest {
         apartment.setProperty(property(propertyId));
         return apartment;
     }
+
 }

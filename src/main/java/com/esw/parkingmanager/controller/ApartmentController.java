@@ -1,5 +1,6 @@
 package com.esw.parkingmanager.controller;
 
+import com.esw.parkingmanager.dto.MoveOutResponse;
 import com.esw.parkingmanager.model.Apartment;
 import com.esw.parkingmanager.security.AccessGuard;
 import com.esw.parkingmanager.service.ApartmentService;
@@ -49,5 +50,17 @@ public class ApartmentController {
                             @Valid @RequestBody Apartment changes) {
         access.checkApartment(propertyId, apartmentId, ADMINS);
         return apartmentService.update(propertyId, apartmentId, changes);
+    }
+
+    @PostMapping("/{apartmentId}/move-out")
+    public MoveOutResponse moveOut(@PathVariable UUID propertyId, @PathVariable UUID apartmentId) {
+        access.checkApartment(propertyId, apartmentId, ADMINS);
+        return apartmentService.moveOut(propertyId, apartmentId);
+    }
+
+    @PostMapping("/{apartmentId}/move-in")
+    public Apartment moveIn(@PathVariable UUID propertyId, @PathVariable UUID apartmentId) {
+        access.checkApartment(propertyId, apartmentId, ADMINS);
+        return apartmentService.moveIn(propertyId, apartmentId);
     }
 }

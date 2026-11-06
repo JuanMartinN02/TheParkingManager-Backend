@@ -18,4 +18,7 @@ public interface AppUserRepository extends JpaRepository<AppUser, UUID> {
     boolean existsByEmail(String email);
 
     List<AppUser> findByPropertyId(UUID propertyId);
+
+    // For move-out / move-in
+    List<AppUser> findByApartmentIdAndActiveTrue(UUID apartmentId);
 }
