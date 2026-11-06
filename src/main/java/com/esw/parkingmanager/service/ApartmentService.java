@@ -39,6 +39,14 @@ public class ApartmentService {
     public Apartment create(UUID propertyId, Apartment apartment) {
         Property property = propertyRepository.findById(propertyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Property not found"));
+
+        // Two "301"s in one property would make "which apartment owns this car?" ambiguous
+        String unitNumber = apartment.getUnitNumber().trim();
+        if (apartmentRepository.existsByPropertyIdAndUnitNumber(propertyId, unitNumber)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Unit " + unitNumber + " already exists in this property");
+        }
+
+        apartment.setUnitNumber(unitNumber);
         apartment.setProperty(property);
         return apartmentRepository.save(apartment);
     }
@@ -56,6 +64,11 @@ public class ApartmentService {
     public Apartment update(UUID propertyId, UUID apartmentId, Apartment changes) {
         Apartment apartment = getOne(propertyId, apartmentId);
 
+        String unitNumber = changes.getUnitNumber().trim(); // .trim() removes spaces at the end "301 " -> "301"
+        if (apartmentRepository.existsByPropertyIdAndUnitNumberAndIdNot(propertyId, unitNumber, apartmentId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Unit " + unitNumber + " already exists in this property");
+        }
+
         // Rule: the limit can't drop below the cars already registered
         long currentVehicles = vehicleRepository.countByApartmentId(apartmentId);
         if (changes.getMaxVehicles() < currentVehicles) {
@@ -64,7 +77,7 @@ public class ApartmentService {
                             + changes.getMaxVehicles());
         }
 
-        apartment.setUnitNumber(changes.getUnitNumber());
+        apartment.setUnitNumber(unitNumber);
         apartment.setMaxVehicles(changes.getMaxVehicles());
         apartment.setMaxVisitorPasses(changes.getMaxVisitorPasses());
         return apartmentRepository.save(apartment);

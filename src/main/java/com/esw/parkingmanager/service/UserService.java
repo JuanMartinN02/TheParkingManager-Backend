@@ -118,6 +118,19 @@ public class UserService {
         return userRepository.save(target);
     }
 
+    // For residents that move back in
+    @Transactional
+    public AppUser activate(AppUser actor, UUID userId) {
+        AppUser target = findUser(userId);
+        checkCanManage(actor, target);
+        // A former resident comes back only once their apartment is occupied again
+        if (target.getApartment() != null && target.getApartment().getStatus() != ApartmentStatus.ACTIVE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "The resident's apartment is moved out. Move it in first");
+        }
+        target.setActive(true);
+        return userRepository.save(target);
+    }
+
     // No email recovery yet, so a forgotten password means an admin sets a new temporary one
     @Transactional
     public AppUser resetPassword(AppUser actor, UUID userId, String temporaryPassword) {

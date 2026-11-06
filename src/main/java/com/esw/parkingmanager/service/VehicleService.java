@@ -17,18 +17,18 @@ import java.util.UUID;
 public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
-    private final ApartmentRepository apartmentRepository;
+    private final ApartmentService apartmentService;
 
-    public VehicleService(ApartmentRepository apartmentRepository, VehicleRepository vehicleRepository) {
-        this.apartmentRepository = apartmentRepository;
+    public VehicleService(VehicleRepository vehicleRepository, ApartmentService apartmentService) {
         this.vehicleRepository = vehicleRepository;
+        this.apartmentService = apartmentService;
     }
 
     // @Transactional wraps the whole method in one database transaction. Either everything in it commits, or nothing does.
     @Transactional
     public Vehicle create(UUID propertyId, UUID apartmentId, Vehicle vehicle){
         // Rule 1: apartment must belong to this property and be active
-        Apartment apartment = findApartment(propertyId, apartmentId);
+        Apartment apartment = apartmentService.getOne(propertyId, apartmentId);
         if (apartment.getStatus() != ApartmentStatus.ACTIVE){
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Apartment is not active");
         }
@@ -60,28 +60,22 @@ public class VehicleService {
 
     // List of all vehicles of an apartment
     public List<Vehicle> list(UUID propertyId, UUID apartmentId){
-        findApartment(propertyId, apartmentId);
+        apartmentService.getOne(propertyId, apartmentId);
         return vehicleRepository.findByApartmentId(apartmentId);
     }
 
     // Get a vehicle
     public Vehicle getOne(UUID propertyId, UUID apartmentId, UUID vehicleId){
-        findApartment(propertyId, apartmentId);
+        apartmentService.getOne(propertyId, apartmentId);
         return findVehicle(apartmentId, vehicleId);
     }
 
     // Rule 4: deleting frees a slot; maxVehicles is NOT touched
     @Transactional
     public void delete(UUID propertyId, UUID apartmentId, UUID vehicleId) {
-        findApartment(propertyId, apartmentId);
+        apartmentService.getOne(propertyId, apartmentId);
         Vehicle vehicle = findVehicle(apartmentId, vehicleId);
         vehicleRepository.delete(vehicle);
-    }
-
-    // Find an apartment and make sure its in a specific property
-    private Apartment findApartment(UUID propertyId, UUID apartmentId){
-        return apartmentRepository.findByIdAndPropertyId(apartmentId, propertyId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Apartment not found"));
     }
 
     // Find a vehicle and make sure is in this apartment

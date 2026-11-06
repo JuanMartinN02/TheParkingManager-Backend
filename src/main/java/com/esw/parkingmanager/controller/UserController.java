@@ -46,4 +46,9 @@ public class UserController {
     public UserResponse resetPassword(@PathVariable UUID userId, @Valid @RequestBody ResetPasswordRequest request) {
         return UserResponse.from(userService.resetPassword(access.currentUser(), userId, request.temporaryPassword()));
     }
+
+    @PostMapping("/{userId}/activate")
+    public UserResponse activate(@PathVariable UUID userId) {
+        return UserResponse.from(userService.activate(access.currentUser(), userId));
+    }
 }
