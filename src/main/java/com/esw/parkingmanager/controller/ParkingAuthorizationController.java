@@ -1,8 +1,8 @@
 package com.esw.parkingmanager.controller;
 
+import com.esw.parkingmanager.dto.AuthorizationResponse;
 import com.esw.parkingmanager.dto.CreateAuthorizationRequest;
 import com.esw.parkingmanager.dto.RenewAuthorizationRequest;
-import com.esw.parkingmanager.model.ParkingAuthorization;
 import com.esw.parkingmanager.security.AccessGuard;
 import com.esw.parkingmanager.service.ParkingAuthorizationService;
 import org.springframework.http.HttpStatus;
@@ -27,40 +27,39 @@ public class ParkingAuthorizationController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ParkingAuthorization create(@PathVariable UUID propertyId,
-                                       @PathVariable UUID apartmentId,
-                                       @RequestBody CreateAuthorizationRequest request) {
+    public AuthorizationResponse create(@PathVariable UUID propertyId, @PathVariable UUID apartmentId,
+                                        @RequestBody CreateAuthorizationRequest request) {
         access.checkApartment(propertyId, apartmentId, ADMINS);
-        return authorizationService.create(propertyId, apartmentId, request);
+        return AuthorizationResponse.from(authorizationService.create(propertyId, apartmentId, request));
     }
 
     @GetMapping
-    public List<ParkingAuthorization> list(@PathVariable UUID propertyId, @PathVariable UUID apartmentId) {
+    public List<AuthorizationResponse> list(@PathVariable UUID propertyId, @PathVariable UUID apartmentId) {
         access.checkApartment(propertyId, apartmentId, EVERYONE);
-        return authorizationService.list(propertyId, apartmentId);
+        return authorizationService.list(propertyId, apartmentId).stream()
+                .map(AuthorizationResponse::from)
+                .toList();
     }
 
     @GetMapping("/{authorizationId}")
-    public ParkingAuthorization getOne(@PathVariable UUID propertyId,
-                                       @PathVariable UUID apartmentId,
-                                       @PathVariable UUID authorizationId) {
+    public AuthorizationResponse getOne(@PathVariable UUID propertyId, @PathVariable UUID apartmentId,
+                                        @PathVariable UUID authorizationId) {
         access.checkApartment(propertyId, apartmentId, EVERYONE);
-        return authorizationService.getOne(propertyId, apartmentId, authorizationId);
+        return AuthorizationResponse.from(authorizationService.getOne(propertyId, apartmentId, authorizationId));
     }
 
     @PutMapping("/{authorizationId}")
-    public ParkingAuthorization renew(@PathVariable UUID propertyId,
-                                      @PathVariable UUID apartmentId,
-                                      @PathVariable UUID authorizationId,
-                                      @RequestBody RenewAuthorizationRequest request) {
+    public AuthorizationResponse renew(@PathVariable UUID propertyId, @PathVariable UUID apartmentId,
+                                       @PathVariable UUID authorizationId,
+                                       @RequestBody RenewAuthorizationRequest request) {
         access.checkApartment(propertyId, apartmentId, ADMINS);
-        return authorizationService.renew(propertyId, apartmentId, authorizationId, request.validUntil());
+        return AuthorizationResponse.from(
+                authorizationService.renew(propertyId, apartmentId, authorizationId, request.validUntil()));
     }
 
     @DeleteMapping("/{authorizationId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID propertyId,
-                       @PathVariable UUID apartmentId,
+    public void delete(@PathVariable UUID propertyId, @PathVariable UUID apartmentId,
                        @PathVariable UUID authorizationId) {
         access.checkApartment(propertyId, apartmentId, ADMINS);
         authorizationService.delete(propertyId, apartmentId, authorizationId);

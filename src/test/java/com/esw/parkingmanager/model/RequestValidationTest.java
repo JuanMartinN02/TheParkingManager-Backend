@@ -1,12 +1,16 @@
 package com.esw.parkingmanager.model;
 
+import com.esw.parkingmanager.dto.ApartmentRequest;
 import com.esw.parkingmanager.dto.CreateUserRequest;
+import com.esw.parkingmanager.dto.PropertyRequest;
+import com.esw.parkingmanager.dto.VehicleRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,46 +21,41 @@ class RequestValidationTest {
 
     @Test
     void completeVehicleIsValid() {
-        assertThat(validator.validate(vehicle())).isEmpty();
+        assertThat(validator.validate(vehicle("Toyota", 2020))).isEmpty();
     }
 
     @Test
     void vehicleWithoutMakeIsRejected() {
-        Vehicle vehicle = vehicle();
-        vehicle.setMake("   ");
-        assertThat(invalidFields(validator.validate(vehicle))).containsExactly("make");
+        assertThat(invalidFields(validator.validate(vehicle("   ", 2020)))).containsExactly("make");
     }
 
     @Test
     void vehicleYearMustBeRealistic() {
-        Vehicle vehicle = vehicle();
-        vehicle.setYear(20219);
-        assertThat(invalidFields(validator.validate(vehicle))).containsExactly("year");
+        assertThat(invalidFields(validator.validate(vehicle("Toyota", 20219)))).containsExactly("year");
     }
 
     @Test
     void missingVehicleYearIsRejected() {
-        Vehicle vehicle = vehicle();
-        vehicle.setYear(null);
-        assertThat(invalidFields(validator.validate(vehicle))).containsExactly("year");
+        assertThat(invalidFields(validator.validate(vehicle("Toyota", null)))).containsExactly("year");
     }
 
     @Test
     void apartmentWithoutLimitIsRejectedNotZero() {
-        Apartment apartment = new Apartment();
-        apartment.setUnitNumber("301");
-        apartment.setMaxVisitorPasses(2);
-        // maxVehicles never set, like a JSON body that forgot it
-        assertThat(invalidFields(validator.validate(apartment))).containsExactly("maxVehicles");
+        // maxVehicles missing, like a JSON body that forgot it
+        ApartmentRequest request = new ApartmentRequest("301", null, 2);
+        assertThat(invalidFields(validator.validate(request))).containsExactly("maxVehicles");
     }
 
     @Test
     void negativeLimitIsRejected() {
-        Apartment apartment = new Apartment();
-        apartment.setUnitNumber("301");
-        apartment.setMaxVehicles(-3);
-        apartment.setMaxVisitorPasses(2);
-        assertThat(invalidFields(validator.validate(apartment))).containsExactly("maxVehicles");
+        ApartmentRequest request = new ApartmentRequest("301", -3, 2);
+        assertThat(invalidFields(validator.validate(request))).containsExactly("maxVehicles");
+    }
+
+    @Test
+    void propertyPassDurationMustBePositive() {
+        PropertyRequest request = new PropertyRequest("Prop A", 10, 20, 0, null);
+        assertThat(invalidFields(validator.validate(request))).containsExactly("visitorPassDurationHours");
     }
 
     @Test
@@ -66,19 +65,14 @@ class RequestValidationTest {
         assertThat(invalidFields(validator.validate(request))).containsExactly("email");
     }
 
-    private Vehicle vehicle() {
-        Vehicle vehicle = new Vehicle();
-        vehicle.setPlate("ABC123");
-        vehicle.setMake("Toyota");
-        vehicle.setModel("Corolla");
-        vehicle.setYear(2020);
-        vehicle.setColor("White");
-        return vehicle;
+    // Records can't be changed after creation, so each test builds the one it needs
+    private VehicleRequest vehicle(String make, Integer year) {
+        return new VehicleRequest("ABC123", make, "Corolla", year, "White");
     }
 
     private <T> Set<String> invalidFields(Set<ConstraintViolation<T>> violations) {
         return violations.stream()
                 .map(violation -> violation.getPropertyPath().toString())
-                .collect(java.util.stream.Collectors.toSet());
+                .collect(Collectors.toSet());
     }
 }
