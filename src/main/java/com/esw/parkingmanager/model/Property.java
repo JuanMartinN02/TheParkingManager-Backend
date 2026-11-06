@@ -14,23 +14,16 @@ public class Property {
     @GeneratedValue
     private UUID id;
 
-    @NotBlank
     @Column(nullable = false)
     private String name;
 
     // Integer, not int: a missing value must be rejected, not turned into 0
-    @NotNull
-    @PositiveOrZero
     @Column(nullable = false)
     private Integer visitorSpotCapacity;
 
-    @NotNull
-    @PositiveOrZero
     @Column(nullable = false)
     private Integer permitSpotCapacity;
 
-    @NotNull
-    @Positive
     @Column(nullable = false)
     private Integer visitorPassDurationHours;
 

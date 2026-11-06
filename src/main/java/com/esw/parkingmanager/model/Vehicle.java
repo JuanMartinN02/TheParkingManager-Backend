@@ -16,26 +16,18 @@ public class Vehicle {
     @GeneratedValue
     private UUID id;
 
-    @NotBlank
     @Column(nullable = false)
     private String plate;
 
-    @NotBlank
     @Column(nullable = false)
     private String make;
 
-    @NotBlank
     @Column(nullable = false)
     private String model;
 
-    // Catches typos like 20219 or 219
-    @NotNull
-    @Min(1900)
-    @Max(2100)
     @Column(nullable = false)
     private Integer year;
 
-    @NotBlank
     @Column(nullable = false)
     private String color;
 
