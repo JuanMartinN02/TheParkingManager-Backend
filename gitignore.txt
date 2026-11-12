@@ -1,0 +1,26 @@
+# Backend build output (Maven)
+target/
+
+# IntelliJ: run configurations can hold environment variables such as passwords
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Frontend dependencies and build output
+node_modules/
+frontend/dist/
+
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+*.local
+
+# Logs
+*.log
+
+# Operating system files
+.DS_Store
+Thumbs.db
