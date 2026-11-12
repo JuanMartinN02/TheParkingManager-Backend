@@ -15,5 +15,50 @@ export interface components {
       active?: boolean;
       mustChangePassword?: boolean;
     };
+    PropertyResponse: {
+      /** Format: uuid */
+      id?: string;
+      name?: string;
+      /** Format: int32 */
+      visitorSpotCapacity?: number;
+      /** Format: int32 */
+      permitSpotCapacity?: number;
+      /** Format: int32 */
+      visitorPassDurationHours?: number;
+      mapPdfUrl?: string;
+    };
+    VehicleSummary: {
+      plate?: string;
+      make?: string;
+      model?: string;
+      /** Format: int32 */
+      year?: number;
+      color?: string;
+    };
+    AuthorizationSummary: {
+      spotLabel?: string;
+      /** Format: date */
+      validUntil?: string;
+    };
+    PlateLookupResponse: {
+      /** @enum {string} */
+      status?: 'RESIDENT_AUTHORIZED' | 'RESIDENT_REGISTERED' | 'UNKNOWN';
+      plate?: string;
+      unitNumber?: string;
+      vehicle?: components['schemas']['VehicleSummary'];
+      authorizations?: components['schemas']['AuthorizationSummary'][];
+      /** Format: date-time */
+      checkedAt?: string;
+    };
+    SpotLookupResponse: {
+      spotLabel?: string;
+      assigned?: boolean;
+      unitNumber?: string;
+      /** Format: date */
+      validUntil?: string;
+      vehicles?: components['schemas']['VehicleSummary'][];
+      /** Format: date-time */
+      checkedAt?: string;
+    };
   };
 }

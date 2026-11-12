@@ -1,31 +1,34 @@
-import { AppBar, Box, Button, Stack, Toolbar, Typography } from '@mui/material';
-import { fonts, tokens } from './theme/theme';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { RequireRole, RequireSession } from './auth/guards';
+import { homeFor } from './auth/home';
+import { useSession } from './auth/SessionContext';
+import { AppShell } from './components/AppShell';
+import { AdminHomePage } from './pages/admin/AdminHomePage';
+import { ChangePasswordPage } from './pages/auth/ChangePasswordPage';
+import { LoginPage } from './pages/auth/LoginPage';
+import { LookupPage } from './pages/operator/LookupPage';
+import { ResidentHomePage } from './pages/resident/ResidentHomePage';
 
-// Temporary page to check the theme. Replaced by the real routes next
+// Any unknown address sends the user to their own home screen
+function HomeRedirect() {
+  const { me, loading } = useSession();
+  if (loading) return null;
+  return <Navigate to={me ? homeFor(me) : '/login'} replace />;
+}
+
 export default function App() {
   return (
-    <>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography sx={{ fontFamily: fonts.display, fontWeight: 600, fontSize: 19 }}>
-            Westpark Apartments
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <Box sx={{ p: 2 }}>
-        <Typography variant="h1">Apartments</Typography>
-        <Typography variant="h2" sx={{ mt: 3 }}>Parking</Typography>
-        <Typography sx={{ mt: 1 }}>Unit 302 owns this car but has no active permit.</Typography>
-        <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-          <Button variant="contained">Primary action</Button>
-          <Button variant="outlined" color="inherit">Secondary</Button>
-        </Stack>
-        <Box sx={{ mt: 3, p: 2, bgcolor: tokens.hazard, color: tokens.onHazard }}>
-          <Typography sx={{ fontFamily: fonts.display, fontWeight: 700, fontSize: 38, lineHeight: 1 }}>
-            No active permit
-          </Typography>
-        </Box>
-      </Box>
-    </>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/change-password" element={<RequireSession allowPasswordChange><ChangePasswordPage /></RequireSession>} />
+
+      <Route element={<RequireSession><AppShell /></RequireSession>}>
+        <Route path="/lookup" element={<RequireRole roles={['SUPER_ADMIN', 'PROPERTY_ADMIN', 'TOWING_OPERATOR']}><LookupPage /></RequireRole>} />
+        <Route path="/admin" element={<RequireRole roles={['SUPER_ADMIN', 'PROPERTY_ADMIN']}><AdminHomePage /></RequireRole>} />
+        <Route path="/me" element={<RequireRole roles={['RESIDENT']}><ResidentHomePage /></RequireRole>} />
+      </Route>
+
+      <Route path="*" element={<HomeRedirect />} />
+    </Routes>
   );
 }
