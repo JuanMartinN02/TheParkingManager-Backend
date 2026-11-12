@@ -1,10 +1,7 @@
 package com.esw.parkingmanager.service;
 
 import com.esw.parkingmanager.dto.MoveOutResponse;
-import com.esw.parkingmanager.model.Apartment;
-import com.esw.parkingmanager.model.ApartmentStatus;
-import com.esw.parkingmanager.model.AppUser;
-import com.esw.parkingmanager.model.Role;
+import com.esw.parkingmanager.model.*;
 import com.esw.parkingmanager.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -89,6 +86,54 @@ class ApartmentServiceTest {
         assertThatThrownBy(() -> service.moveIn(PROPERTY_A, APARTMENT_301))
                 .isInstanceOfSatisfying(ResponseStatusException.class,
                         e -> assertThat(e.getStatusCode()).isEqualTo(HttpStatus.CONFLICT));
+    }
+
+    @Test
+    void duplicateUnitNumberIsRejectedOnCreate() {
+        Property property = new Property();
+        ReflectionTestUtils.setField(property, "id", PROPERTY_A);
+        when(propertyRepository.findById(PROPERTY_A)).thenReturn(Optional.of(property));
+        when(apartmentRepository.existsByPropertyIdAndUnitNumber(PROPERTY_A, "301")).thenReturn(true);
+
+        Apartment duplicate = new Apartment();
+        // Extra spaces on purpose: still the same unit
+        duplicate.setUnitNumber(" 301 ");
+
+        assertThatThrownBy(() -> service.create(PROPERTY_A, duplicate))
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        e -> assertThat(e.getStatusCode()).isEqualTo(HttpStatus.CONFLICT));
+        verify(apartmentRepository, never()).save(any());
+    }
+
+    @Test
+    void updateCanKeepItsOwnUnitNumber() {
+        apartmentWithStatus(ApartmentStatus.ACTIVE);
+        when(apartmentRepository.existsByPropertyIdAndUnitNumberAndIdNot(PROPERTY_A, "301", APARTMENT_301)).thenReturn(false);
+        when(vehicleRepository.countByApartmentId(APARTMENT_301)).thenReturn(0L);
+        when(apartmentRepository.save(any(Apartment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Apartment changes = new Apartment();
+        changes.setUnitNumber("301");
+        changes.setMaxVehicles(2);
+        changes.setMaxVisitorPasses(2);
+
+        assertThat(service.update(PROPERTY_A, APARTMENT_301, changes).getUnitNumber()).isEqualTo("301");
+    }
+
+    @Test
+    void renameToAnExistingUnitIsRejected() {
+        apartmentWithStatus(ApartmentStatus.ACTIVE);
+        when(apartmentRepository.existsByPropertyIdAndUnitNumberAndIdNot(PROPERTY_A, "302", APARTMENT_301)).thenReturn(true);
+
+        Apartment changes = new Apartment();
+        changes.setUnitNumber("302");
+        changes.setMaxVehicles(2);
+        changes.setMaxVisitorPasses(2);
+
+        assertThatThrownBy(() -> service.update(PROPERTY_A, APARTMENT_301, changes))
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        e -> assertThat(e.getStatusCode()).isEqualTo(HttpStatus.CONFLICT));
+        verify(apartmentRepository, never()).save(any());
     }
 
     // ---------- Helpers ----------

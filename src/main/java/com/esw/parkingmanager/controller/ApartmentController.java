@@ -1,16 +1,18 @@
 package com.esw.parkingmanager.controller;
 
+import com.esw.parkingmanager.dto.ApartmentRequest;
+import com.esw.parkingmanager.dto.ApartmentResponse;
 import com.esw.parkingmanager.dto.MoveOutResponse;
-import com.esw.parkingmanager.model.Apartment;
 import com.esw.parkingmanager.security.AccessGuard;
 import com.esw.parkingmanager.service.ApartmentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import static com.esw.parkingmanager.security.RoleGroups.*;
 
 import java.util.List;
 import java.util.UUID;
+
+import static com.esw.parkingmanager.security.RoleGroups.*;
 
 @RestController
 @RequestMapping("/properties/{propertyId}/apartments")
@@ -26,30 +28,32 @@ public class ApartmentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Apartment create(@PathVariable UUID propertyId, @Valid @RequestBody Apartment apartment) {
+    public ApartmentResponse create(@PathVariable UUID propertyId, @Valid @RequestBody ApartmentRequest request) {
         access.checkProperty(propertyId, ADMINS);
-        return apartmentService.create(propertyId, apartment);
+        return ApartmentResponse.from(apartmentService.create(propertyId, request.toEntity()));
     }
 
     @GetMapping
-    public List<Apartment> list(@PathVariable UUID propertyId) {
+    public List<ApartmentResponse> list(@PathVariable UUID propertyId) {
         access.checkProperty(propertyId, STAFF);
-        return apartmentService.list(propertyId);
+        return apartmentService.list(propertyId).stream()
+                .map(ApartmentResponse::from)
+                .toList();
     }
 
     // Apartment level here, so a resident can open their own apartment but not a neighbor's
     @GetMapping("/{apartmentId}")
-    public Apartment getOne(@PathVariable UUID propertyId, @PathVariable UUID apartmentId) {
+    public ApartmentResponse getOne(@PathVariable UUID propertyId, @PathVariable UUID apartmentId) {
         access.checkApartment(propertyId, apartmentId, EVERYONE);
-        return apartmentService.getOne(propertyId, apartmentId);
+        return ApartmentResponse.from(apartmentService.getOne(propertyId, apartmentId));
     }
 
     @PutMapping("/{apartmentId}")
-    public Apartment update(@PathVariable UUID propertyId,
-                            @PathVariable UUID apartmentId,
-                            @Valid @RequestBody Apartment changes) {
+    public ApartmentResponse update(@PathVariable UUID propertyId,
+                                    @PathVariable UUID apartmentId,
+                                    @Valid @RequestBody ApartmentRequest request) {
         access.checkApartment(propertyId, apartmentId, ADMINS);
-        return apartmentService.update(propertyId, apartmentId, changes);
+        return ApartmentResponse.from(apartmentService.update(propertyId, apartmentId, request.toEntity()));
     }
 
     @PostMapping("/{apartmentId}/move-out")
@@ -59,8 +63,8 @@ public class ApartmentController {
     }
 
     @PostMapping("/{apartmentId}/move-in")
-    public Apartment moveIn(@PathVariable UUID propertyId, @PathVariable UUID apartmentId) {
+    public ApartmentResponse moveIn(@PathVariable UUID propertyId, @PathVariable UUID apartmentId) {
         access.checkApartment(propertyId, apartmentId, ADMINS);
-        return apartmentService.moveIn(propertyId, apartmentId);
+        return ApartmentResponse.from(apartmentService.moveIn(propertyId, apartmentId));
     }
 }
