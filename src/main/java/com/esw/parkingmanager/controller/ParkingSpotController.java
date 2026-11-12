@@ -1,7 +1,8 @@
 package com.esw.parkingmanager.controller;
 
 import com.esw.parkingmanager.dto.BulkSpotRequest;
-import com.esw.parkingmanager.model.ParkingSpot;
+import com.esw.parkingmanager.dto.SpotRequest;
+import com.esw.parkingmanager.dto.SpotResponse;
 import com.esw.parkingmanager.security.AccessGuard;
 import com.esw.parkingmanager.service.ParkingSpotService;
 import jakarta.validation.Valid;
@@ -27,28 +28,32 @@ public class ParkingSpotController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ParkingSpot create(@PathVariable UUID propertyId, @Valid @RequestBody ParkingSpot spot) {
+    public SpotResponse create(@PathVariable UUID propertyId, @Valid @RequestBody SpotRequest request) {
         access.checkProperty(propertyId, ADMINS);
-        return parkingSpotService.create(propertyId, spot);
+        return SpotResponse.from(parkingSpotService.create(propertyId, request.toEntity()));
     }
 
     @PostMapping("/bulk")
     @ResponseStatus(HttpStatus.CREATED)
-    public List<ParkingSpot> createBulk(@PathVariable UUID propertyId, @RequestBody BulkSpotRequest request) {
+    public List<SpotResponse> createBulk(@PathVariable UUID propertyId, @RequestBody BulkSpotRequest request) {
         access.checkProperty(propertyId, ADMINS);
-        return parkingSpotService.createBulk(propertyId, request.labels());
+        return parkingSpotService.createBulk(propertyId, request.labels()).stream()
+                .map(SpotResponse::from)
+                .toList();
     }
 
     @GetMapping
-    public List<ParkingSpot> list(@PathVariable UUID propertyId) {
+    public List<SpotResponse> list(@PathVariable UUID propertyId) {
         access.checkProperty(propertyId, STAFF);
-        return parkingSpotService.list(propertyId);
+        return parkingSpotService.list(propertyId).stream()
+                .map(SpotResponse::from)
+                .toList();
     }
 
     @GetMapping("/{spotId}")
-    public ParkingSpot getOne(@PathVariable UUID propertyId, @PathVariable UUID spotId) {
+    public SpotResponse getOne(@PathVariable UUID propertyId, @PathVariable UUID spotId) {
         access.checkProperty(propertyId, STAFF);
-        return parkingSpotService.getOne(propertyId, spotId);
+        return SpotResponse.from(parkingSpotService.getOne(propertyId, spotId));
     }
 
     @DeleteMapping("/{spotId}")

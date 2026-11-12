@@ -13,7 +13,6 @@ public class ParkingSpot {
     @GeneratedValue
     private UUID id;
 
-    @NotBlank
     @Column(nullable = false)
     private String label;
 

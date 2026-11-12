@@ -184,6 +184,33 @@ class UserServiceTest {
         verify(userRepository, never()).save(any());
     }
 
+    // ---------- Extra ------------
+    @Test
+    void propertyAdminCanReactivateResidentOfOccupiedApartment() {
+        AppUser admin = user(PROPERTY_ADMIN, PROPERTY_A);
+        AppUser resident = user(RESIDENT, PROPERTY_A);
+        resident.setApartment(apartment(APARTMENT_301, PROPERTY_A));
+        resident.setActive(false);
+        when(userRepository.findById(resident.getId())).thenReturn(Optional.of(resident));
+        savesWhatItGets();
+
+        assertThat(service.activate(admin, resident.getId()).isActive()).isTrue();
+    }
+
+    @Test
+    void residentOfMovedOutApartmentCantBeReactivated() {
+        AppUser admin = user(PROPERTY_ADMIN, PROPERTY_A);
+        AppUser resident = user(RESIDENT, PROPERTY_A);
+        Apartment movedOut = apartment(APARTMENT_301, PROPERTY_A);
+        movedOut.setStatus(ApartmentStatus.MOVED_OUT);
+        resident.setApartment(movedOut);
+        resident.setActive(false);
+        when(userRepository.findById(resident.getId())).thenReturn(Optional.of(resident));
+
+        assertStatus(() -> service.activate(admin, resident.getId()), HttpStatus.CONFLICT);
+        assertThat(resident.isActive()).isFalse();
+    }
+
     // ---------- Helpers ----------
 
     // The fake save hands back the same object it receives, like the real one does

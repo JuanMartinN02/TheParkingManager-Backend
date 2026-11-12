@@ -8,11 +8,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ApartmentRepository extends JpaRepository<Apartment, UUID> {
-    // Basically: SELECT a FROM Apartment a WHERE a.propertyId = :propertyId
+    // SELECT a FROM Apartment a WHERE a.propertyId = :propertyId
     // Only bring the Properties apartment (Multitenancy) property boundary filter
     // to make sure a request for one property only loads apartments belonging to that specific property.
     List<Apartment> findByPropertyId(UUID propertyId);
 
     // WHERE id = ? AND property_id = ?
     Optional<Apartment> findByIdAndPropertyId(UUID id, UUID propertyId);
+
+    boolean existsByPropertyIdAndUnitNumber(UUID propertyId, String unitNumber);
+
+    // Same check for renames, ignoring the apartment being renamed
+    boolean existsByPropertyIdAndUnitNumberAndIdNot(UUID propertyId, String unitNumber, UUID id);
 }
