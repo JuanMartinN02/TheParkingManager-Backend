@@ -64,11 +64,18 @@ export const theme = createTheme({
       // In dark mode MUI paints app bars gray unless told to keep the color: ESW blue stays blue
       defaultProps: { elevation: 0, color: 'primary', enableColorOnDark: true },
     },
-    MuiOutlinedInput: {
+        MuiOutlinedInput: {
       styleOverrides: {
-        root: { backgroundColor: tokens.panel },
+        root: {
+          backgroundColor: tokens.panel,
+          // ESW blue is too dark to see on the night background, so focus uses the lighter focus blue
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: tokens.focus },
+        },
         notchedOutline: { borderColor: tokens.line, borderWidth: 2 },
       },
+    },
+    MuiInputLabel: {
+      styleOverrides: { root: { '&.Mui-focused': { color: tokens.focus } } },
     },
   },
 });
